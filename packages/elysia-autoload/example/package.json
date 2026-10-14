@@ -1,0 +1,13 @@
+{
+	"name": "example",
+	"module": "index.ts",
+	"type": "module",
+	"devDependencies": {
+		"@types/bun": "^1.1.9",
+		"esbuild-plugin-autoload": "^0.2.1",
+		"elysia-autoload": "link:elysia-autoload"
+	},
+	"peerDependencies": {
+		"typescript": "^5.6.2"
+	}
+}

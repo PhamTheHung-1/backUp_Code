@@ -1,0 +1,28 @@
+services:
+  # app:
+  #   build:
+  #     context: .
+  #   ports:
+  #     - 3000:3000
+  tododb:
+    container_name: tododb_container
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 090204
+      POSTGRES_DB: PetCare
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
+    ports:
+      - "5433:5432"
+      # networks:
+      # - postgres
+    restart: unless-stopped
+
+# networks:
+#   postgres:
+#     driver: bridge
+
+volumes:
+  postgres: # pgadmin:

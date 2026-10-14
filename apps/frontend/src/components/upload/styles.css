@@ -1,0 +1,32 @@
+/* Upload */
+.slash-upload .ant-upload {
+	border: none !important;
+}
+
+.slash-upload .ant-upload-list {
+	display: block;
+	flex-wrap: wrap;
+}
+
+.slash-upload.is-thumbnail .ant-upload-list {
+	display: flex;
+}
+
+/* Upload Avatar */
+.slash-upload-avatar {
+	transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+}
+
+.slash-upload-avatar .ant-upload,
+.slash-upload-avatar .ant-upload-select {
+	border: none !important;
+}
+
+/* Upload Box */
+.slash-upload-box .ant-upload {
+	border: none !important;
+}
+
+.slash-upload-box .ant-upload-list {
+	display: none;
+}

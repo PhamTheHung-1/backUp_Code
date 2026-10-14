@@ -1,0 +1,162 @@
+.slash-markdown {
+	display: grid;
+}
+
+.slash-markdown h1 {
+	font-size: 64px;
+	line-height: 1.25;
+	font-weight: 800;
+}
+.slash-markdown h2 {
+	font-size: 56px;
+	line-height: 1.25;
+	font-weight: 700;
+}
+.slash-markdown h3 {
+	font-size: 48px;
+	line-height: 1.25;
+	font-weight: 700;
+}
+.slash-markdown h4 {
+	font-size: 40px;
+	line-height: 1.25;
+	font-weight: 700;
+}
+.slash-markdown h5 {
+	font-size: 32px;
+	line-height: 1.25;
+	font-weight: 700;
+}
+
+.slash-markdown a {
+	color: var(--colors-palette-primary-default);
+}
+
+.slash-markdown img {
+	border-radius: 4px;
+}
+
+.slash-markdown br {
+	display: grid;
+	content: "";
+	margin-top: 0.75em;
+}
+
+/* Divider */
+.slash-markdown hr {
+	margin: 0;
+	border-width: 1px;
+	border-style: solid;
+}
+
+/* List */
+.slash-markdown ul,
+.slash-markdown ol {
+	margin: 0;
+}
+
+.slash-markdown ul li,
+.slash-markdown ol li {
+	line-height: 2;
+	display: flex;
+	align-items: center;
+}
+
+/* Blockquote */
+.slash-markdown blockquote {
+	line-height: 1.5;
+	font-size: 1.5em;
+	margin: 40px auto;
+	position: relative;
+	padding: 24px 24px 24px 64px;
+	border-radius: 16px;
+	background-color: var(--colors-background-neutral);
+	color: var(--colors-text-secondary);
+}
+
+.slash-markdown blockquote p,
+.slash-markdown blockquote span {
+	margin-bottom: 0;
+	font-size: inherit;
+	font-family: inherit;
+}
+
+.slash-markdown blockquote::before {
+	left: 16px;
+	top: -8px;
+	display: block;
+	font-size: 3em;
+	position: absolute;
+	content: "“";
+}
+
+/* Code Block */
+.slash-markdown pre,
+.slash-markdown pre > code {
+	font-size: 16px;
+	overflow-x: auto;
+	white-space: pre;
+	border-radius: 8px;
+}
+
+.slash-markdown code {
+	font-size: 14px;
+	border-radius: 4px;
+	white-space: pre;
+	padding: 0px;
+	background-color: var(--colors-background-neutral);
+}
+
+/* Table */
+.slash-markdown table {
+	width: 100%;
+	border-collapse: collapse;
+	border: 1px solid var(--colors-common-border);
+}
+
+.slash-markdown table th,
+.slash-markdown table td {
+	padding: 8px;
+	border: 1px solid var(--colors-common-border);
+}
+
+.slash-markdown table tbody tr:nth-of-type(odd) {
+	background-color: var(--colors-background-neutral);
+}
+
+/* Checkbox */
+.slash-markdown input {
+	margin-right: 10px;
+}
+
+.slash-markdown input[type="checkbox"] {
+	position: relative;
+	cursor: pointer;
+}
+
+.slash-markdown input[type="checkbox"]::before {
+	content: "";
+	top: -2px;
+	left: -2px;
+	width: 17px;
+	height: 17px;
+	border-radius: 3px;
+	position: absolute;
+	background-color: var(--colors-palette-primary-default);
+}
+
+.slash-markdown input[type="checkbox"]:checked::before {
+	background-color: var(--colors-palette-primary-default);
+}
+
+.slash-markdown input[type="checkbox"]:checked::after {
+	content: "";
+	top: 1px;
+	left: 5px;
+	width: 4px;
+	height: 9px;
+	position: absolute;
+	transform: rotate(45deg);
+	border: solid var(--colors-common-white);
+	border-width: 0 2px 2px 0;
+}

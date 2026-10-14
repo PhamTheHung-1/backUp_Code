@@ -1,0 +1,38 @@
+{
+	"name": "backend",
+	"version": "1.0.50",
+	"scripts": {
+		"dev": "bun run --watch src/index.ts",
+		"typecheck": "tsc --noEmit",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write .",
+		"db:generate": "drizzle-kit generate",
+		"db:migrate": "drizzle-kit migrate",
+		"db:push": "drizzle-kit push",
+		"routes:generate": "bun ../../scripts/generate-routes-types.ts",
+		"arch:check": "bun scripts/check-architecture.ts",
+		"test": "bun test",
+		"verify": "bun run typecheck && bun run arch:check && bun test"
+	},
+	"dependencies": {
+		"@elysiajs/cors": "1.4.0",
+		"@elysiajs/jwt": "^1.4.0",
+		"@elysiajs/openapi": "^1.4.11",
+		"drizzle-orm": "^0.44.7",
+		"drizzle-typebox": "^0.3.3",
+		"elysia": "catalog:",
+		"pg": "^8.16.3",
+		"openapi-scalar": "workspace:*"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "catalog:",
+		"typescript": "catalog:",
+		"@types/bun": "catalog:",
+		"@types/pg": "^8.15.6",
+		"bun-types": "catalog:",
+		"drizzle-kit": "^0.31.7",
+		"elysia-autoload": "workspace:*",
+		"esbuild-plugin-autoload": "^0.3.3"
+	},
+	"module": "src/index.js"
+}
