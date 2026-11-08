@@ -58,6 +58,18 @@ export const userRepository = {
 		return result[0] ?? null;
 	},
 
+	async findIdentityByEmail(email: string): Promise<Pick<SafeUserSelect, "id" | "email" | "status"> | null> {
+		const result = await db
+			.select({
+				id: users.id,
+				email: users.email,
+				status: users.status,
+			})
+			.from(users)
+			.where(eq(users.email, email));
+		return result[0] ?? null;
+	},
+
 	async create(data: {
 		email: string;
 		username: string;

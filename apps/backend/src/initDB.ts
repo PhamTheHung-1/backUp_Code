@@ -1,5 +1,8 @@
 import { createHmac, randomBytes } from "node:crypto";
+import { eq } from "drizzle-orm";
 import { db } from "./db";
+import { clinicMemberships, membershipRoles } from "./db/schema/clinic-membership-schema";
+import { clinics } from "./db/schema/clinic-schema";
 import { menus } from "./db/schema/menu-schema";
 import { roles } from "./db/schema/role-schema";
 import { usersTableSchema as users } from "./db/schema/user-schema";
@@ -140,7 +143,7 @@ async function createMenus() {
 	return allmenu.map(m => m.id);
 }
 // biome-ignore lint/suspicious/noExplicitAny : temp
-async function creatRootAdminRole(menus: any) {
+async function creatRootAdminRole(menus: any, clinicId: number) {
 	//create roles
 	const apis = [
 		{
@@ -184,6 +187,7 @@ async function creatRootAdminRole(menus: any) {
 	const role = await db
 		.insert(roles)
 		.values({
+			clinicId,
 			menus: menus,
 			apis: apis,
 			hmenus: [],
@@ -196,22 +200,46 @@ async function creatRootAdminRole(menus: any) {
 }
 
 export default async function initDB() {
+	const [legacyClinic] = await db.select({ id: clinics.id }).from(clinics).where(eq(clinics.slug, "legacy-clinic")).limit(1);
+	if (!legacyClinic) {
+		throw new Error("Legacy clinic is missing. Run database migrations before seeding.");
+	}
+
 	const menus = await createMenus();
 	console.log(menus);
 
-	const roleId = await creatRootAdminRole(menus);
+	const roleId = await creatRootAdminRole(menus, legacyClinic.id);
 
 	//create root admin user
 	const salt = randomBytes(16).toHex();
 	const hpass = createHmac("sha256", salt).update("admin@123").digest("hex");
-	await db.insert(users).values({
-		email: "admin@gmail.com",
-		username: "Root Admin",
-		avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=admin",
-		status: true,
-		hpass,
-		salt,
-		roles: [roleId],
+	const [rootAdmin] = await db
+		.insert(users)
+		.values({
+			email: "admin@gmail.com",
+			username: "Root Admin",
+			avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=admin",
+			status: true,
+			hpass,
+			salt,
+			roles: [roleId],
+		})
+		.returning({ id: users.id });
+
+	const [membership] = await db
+		.insert(clinicMemberships)
+		.values({
+			clinicId: legacyClinic.id,
+			userId: rootAdmin.id,
+			status: "active",
+			branchScope: "all",
+		})
+		.returning({ id: clinicMemberships.id });
+
+	await db.insert(membershipRoles).values({
+		clinicId: legacyClinic.id,
+		membershipId: membership.id,
+		roleId,
 	});
 }
 

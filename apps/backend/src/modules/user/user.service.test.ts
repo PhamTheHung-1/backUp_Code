@@ -19,6 +19,7 @@ describe("UserService", () => {
 			}),
 			findFullById: async () => null,
 			findByEmail: async () => null,
+			findIdentityByEmail: async () => null,
 			create: async () => ({ id: 1 }),
 			update: async () => ({ id: 1 }),
 			// biome-ignore lint/suspicious/noExplicitAny: mock in unit test
@@ -39,6 +40,7 @@ describe("UserService", () => {
 			findById: async () => null,
 			findFullById: async () => null,
 			findByEmail: async () => null,
+			findIdentityByEmail: async () => null,
 			create: async () => ({ id: 1 }),
 			update: async () => null,
 			// biome-ignore lint/suspicious/noExplicitAny: mock in unit test

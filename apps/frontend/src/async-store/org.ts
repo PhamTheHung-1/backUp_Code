@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import type { InferResType } from "packages/type-utils";
+import type { InferResType } from "type-utils";
 import { treatyClient, unwrap } from "./apiClient";
 
 export type Organization = InferResType<typeof treatyClient.api.org.get>[number];

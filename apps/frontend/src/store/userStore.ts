@@ -1,11 +1,13 @@
 import { type SignInReq, useLogin } from "@fe/async-store/user";
 import { convertFlatArrayToTree } from "@fe/utils/tree";
+import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import type { UserInfo, UserToken } from "#fe/entity";
 import { StorageEnum } from "#fe/enum";
+import useClinicStore from "./clinicStore";
 
 const { VITE_APP_HOMEPAGE: HOMEPAGE } = import.meta.env;
 
@@ -34,6 +36,7 @@ const useUserStore = create<UserStore>()(
 				},
 				clearUserInfoAndToken() {
 					set({ userInfo: {}, userToken: {} });
+					useClinicStore.getState().clearActiveClinic();
 				},
 			},
 		}),
@@ -55,8 +58,10 @@ export const useUserActions = () => useUserStore(state => state.actions);
 
 export const useSignIn = () => {
 	const loginMutation = useLogin();
+	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 	const { setUserToken, setUserInfo } = useUserActions();
+	const clearActiveClinic = useClinicStore(state => state.clearActiveClinic);
 
 	const signIn = async (loginData: SignInReq) => {
 		try {
@@ -75,6 +80,8 @@ export const useSignIn = () => {
 			};
 			setUserToken({ accessToken: token ? token : undefined, refreshToken: token ? token : undefined });
 			setUserInfo(formatedUser);
+			clearActiveClinic();
+			queryClient.clear();
 			navigate(HOMEPAGE, { replace: true });
 		} catch (err: any) {
 			console.log(err);

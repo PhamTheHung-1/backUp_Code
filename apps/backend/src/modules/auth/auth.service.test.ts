@@ -32,6 +32,7 @@ describe("AuthService", () => {
 			findRolesByIds: async () => [
 				{
 					id: 1,
+					clinicId: 1,
 					name: "Admin",
 					desc: null,
 					menus: [10],

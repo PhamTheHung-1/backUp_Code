@@ -1,6 +1,8 @@
 import { withNumericId } from "@be/db/schema/schema-utils";
+import { AppError } from "@be/shared/errors/app-error";
 import { t } from "elysia";
 import type { App } from "../../App";
+import { clinicContextService } from "../clinic-context/clinic-context.service";
 import { insertRoleSchema, selectRoleSchema } from "./role.schema";
 import { roleService } from "./role.service";
 
@@ -8,11 +10,14 @@ export default (app: App) =>
 	app
 		.post(
 			"",
-			async ({ body }) => {
-				return roleService.createRole(body);
+			async ({ body, clinicAuth }) => {
+				if (!clinicAuth) throw AppError.unauthorized("Unauthenticated");
+				const clinicContext = clinicContextService.requireClinicContext(clinicAuth);
+				return roleService.createRole(body, clinicContext.clinicId);
 			},
 			{
-				body: insertRoleSchema,
+				body: t.Omit(insertRoleSchema, ["clinicId"]),
+				isAuth: true,
 				detail: {
 					summary: "Create a new role",
 					tags: ["Role"],
@@ -22,11 +27,14 @@ export default (app: App) =>
 		)
 		.put(
 			"",
-			async ({ body }) => {
-				return roleService.updateRole(body);
+			async ({ body, clinicAuth }) => {
+				if (!clinicAuth) throw AppError.unauthorized("Unauthenticated");
+				const clinicContext = clinicContextService.requireClinicContext(clinicAuth);
+				return roleService.updateRole(body, clinicContext.clinicId);
 			},
 			{
-				body: withNumericId(insertRoleSchema),
+				body: withNumericId(t.Omit(insertRoleSchema, ["clinicId"])),
+				isAuth: true,
 				detail: {
 					summary: "Update role",
 					tags: ["Role"],
@@ -36,15 +44,18 @@ export default (app: App) =>
 		)
 		.get(
 			"",
-			async () => {
-				return roleService.listRoles();
+			async ({ clinicAuth }) => {
+				if (!clinicAuth) throw AppError.unauthorized("Unauthenticated");
+				const clinicContext = clinicContextService.requireClinicContext(clinicAuth);
+				return roleService.listRoles(clinicContext.clinicId);
 			},
 			{
 				response: t.Array(selectRoleSchema),
+				isAuth: true,
 				detail: {
 					summary: "Return role list",
 					tags: ["Role"],
-					authType: 0,
+					authType: 2,
 				},
 			},
 		);

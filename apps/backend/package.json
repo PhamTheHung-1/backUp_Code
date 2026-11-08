@@ -18,21 +18,21 @@
 		"@elysiajs/cors": "1.4.0",
 		"@elysiajs/jwt": "^1.4.0",
 		"@elysiajs/openapi": "^1.4.11",
-		"drizzle-orm": "^0.44.7",
+		"drizzle-orm": "^0.45.4",
 		"drizzle-typebox": "^0.3.3",
 		"elysia": "catalog:",
-		"pg": "^8.16.3",
-		"openapi-scalar": "workspace:*"
+		"openapi-scalar": "workspace:*",
+		"pg": "^8.16.3"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "catalog:",
-		"typescript": "catalog:",
 		"@types/bun": "catalog:",
 		"@types/pg": "^8.15.6",
 		"bun-types": "catalog:",
-		"drizzle-kit": "^0.31.7",
+		"drizzle-kit": "^0.31.11",
 		"elysia-autoload": "workspace:*",
-		"esbuild-plugin-autoload": "^0.3.3"
+		"esbuild-plugin-autoload": "^0.3.3",
+		"typescript": "catalog:"
 	},
 	"module": "src/index.js"
 }

@@ -1,10 +1,10 @@
-import { Iconify } from "@fe/components/icon";
+import { Iconify, SvgIcon } from "@fe/components/icon";
 import { CircleLoading } from "@fe/components/loading";
 import { useUserPermission } from "@fe/store/userStore";
 import { flattenTrees } from "@fe/utils/tree";
 import { Tag } from "antd";
 import { isEmpty } from "ramda";
-import { lazy, Suspense, useMemo } from "react";
+import { lazy, Suspense, useMemo, type ComponentType } from "react";
 import { Navigate, Outlet } from "react-router";
 import type { Permission } from "#fe/entity";
 import { BasicStatus, MenuType } from "#fe/enum";
@@ -12,8 +12,90 @@ import type { AppRouteObject } from "#fe/router";
 import { getRoutesFromModules } from "../utils";
 
 const ENTRY_PATH = "/src/pages";
-const PAGES = import.meta.glob("/src/pages/**/*.tsx");
+type PageComponent = ComponentType<Record<string, unknown>>;
+type PageModule = { default: PageComponent };
+const PAGES = import.meta.glob<PageModule>("/src/pages/**/*.tsx");
 const loadComponentFromPath = (path: string) => PAGES[`${ENTRY_PATH}${path}`];
+const ClinicManagementPage = lazy(() => import("@fe/pages/management/clinic-management"));
+const OwnersPage = lazy(() => import("@fe/pages/management/owners"));
+const PetsPage = lazy(() => import("@fe/pages/management/pets"));
+const AppointmentsPage = lazy(() => import("@fe/pages/management/appointments"));
+const StaffPage = lazy(() => import("@fe/pages/management/staff"));
+
+const CLINIC_MANAGEMENT_ROUTE: AppRouteObject = {
+	path: "/clinic-management",
+	element: (
+		<Suspense fallback={<CircleLoading />}>
+			<ClinicManagementPage />
+		</Suspense>
+	),
+	meta: {
+		label: "Clinic management",
+		icon: <SvgIcon icon="ic-management" className="ant-menu-item-icon" size="24" />,
+		key: "/clinic-management",
+	},
+	order: 0,
+};
+
+const OWNER_MANAGEMENT_ROUTE: AppRouteObject = {
+	path: "/owners",
+	element: (
+		<Suspense fallback={<CircleLoading />}>
+			<OwnersPage />
+		</Suspense>
+	),
+	meta: {
+		label: "Owners",
+		icon: <Iconify icon="solar:users-group-rounded-bold-duotone" className="ant-menu-item-icon" size={24} />,
+		key: "/owners",
+	},
+	order: 1,
+};
+
+const PET_MANAGEMENT_ROUTE: AppRouteObject = {
+	path: "/pets",
+	element: (
+		<Suspense fallback={<CircleLoading />}>
+			<PetsPage />
+		</Suspense>
+	),
+	meta: {
+		label: "Pets",
+		icon: <Iconify icon="solar:paw-print-bold-duotone" className="ant-menu-item-icon" size={24} />,
+		key: "/pets",
+	},
+	order: 2,
+};
+
+const APPOINTMENT_MANAGEMENT_ROUTE: AppRouteObject = {
+	path: "/appointments",
+	element: (
+		<Suspense fallback={<CircleLoading />}>
+			<AppointmentsPage />
+		</Suspense>
+	),
+	meta: {
+		label: "Appointments",
+		icon: <Iconify icon="solar:calendar-mark-bold-duotone" className="ant-menu-item-icon" size={24} />,
+		key: "/appointments",
+	},
+	order: 3,
+};
+
+const STAFF_MANAGEMENT_ROUTE: AppRouteObject = {
+	path: "/staff",
+	element: (
+		<Suspense fallback={<CircleLoading />}>
+			<StaffPage />
+		</Suspense>
+	),
+	meta: {
+		label: "Staff",
+		icon: <Iconify icon="solar:user-id-bold-duotone" className="ant-menu-item-icon" size={24} />,
+		key: "/staff",
+	},
+	order: 4,
+};
 
 /**
  * Build complete route path by traversing from current permission to root
@@ -110,16 +192,20 @@ const createMenuRoute = (permission: Permission, flattenedPermissions: Permissio
 	const baseRoute = createBaseRoute(permission, buildCompleteRoute(permission, flattenedPermissions));
 
 	if (permission.component) {
-		const Element = lazy(loadComponentFromPath(permission.component) as any);
+		const loader = loadComponentFromPath(permission.component);
 
-		if (permission.frameSrc) {
-			baseRoute.element = <Element src={permission.frameSrc} />;
-		} else {
-			baseRoute.element = (
-				<Suspense fallback={<CircleLoading />}>
-					<Element />
-				</Suspense>
-			);
+		if (loader) {
+			const Element = lazy(loader);
+
+			if (permission.frameSrc) {
+				baseRoute.element = <Element src={permission.frameSrc} />;
+			} else {
+				baseRoute.element = (
+					<Suspense fallback={<CircleLoading />}>
+						<Element />
+					</Suspense>
+				);
+			}
 		}
 	}
 
@@ -137,15 +223,41 @@ function transformPermissionsToRoutes(permissions: Permission[], flattenedPermis
 
 const ROUTE_MODE = import.meta.env.VITE_APP_ROUTER_MODE;
 export function usePermissionRoutes() {
-	if (ROUTE_MODE === "module") {
-		return getRoutesFromModules();
-	}
+    const permissions = useUserPermission();
 
-	const permissions = useUserPermission();
-	return useMemo(() => {
-		if (!permissions) return [];
+    const permissionRoutes = useMemo(() => {
+        if (ROUTE_MODE === "module") {
+            return [
+                ...getRoutesFromModules(),
+                CLINIC_MANAGEMENT_ROUTE,
+                OWNER_MANAGEMENT_ROUTE,
+                PET_MANAGEMENT_ROUTE,
+                APPOINTMENT_MANAGEMENT_ROUTE,
+                STAFF_MANAGEMENT_ROUTE,
+            ];
+        }
 
-		const flattenedPermissions = flattenTrees(permissions);
-		return transformPermissionsToRoutes(permissions, flattenedPermissions);
-	}, [permissions]);
+        if (!permissions) {
+            return [
+                CLINIC_MANAGEMENT_ROUTE,
+                OWNER_MANAGEMENT_ROUTE,
+                PET_MANAGEMENT_ROUTE,
+                APPOINTMENT_MANAGEMENT_ROUTE,
+                STAFF_MANAGEMENT_ROUTE,
+            ];
+        }
+
+        const flattenedPermissions = flattenTrees(permissions);
+
+        return [
+            ...transformPermissionsToRoutes(permissions, flattenedPermissions),
+            CLINIC_MANAGEMENT_ROUTE,
+            OWNER_MANAGEMENT_ROUTE,
+            PET_MANAGEMENT_ROUTE,
+            APPOINTMENT_MANAGEMENT_ROUTE,
+            STAFF_MANAGEMENT_ROUTE,
+        ];
+    }, [permissions]);
+
+    return permissionRoutes;
 }

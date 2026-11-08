@@ -1,13 +1,14 @@
 import { cors } from "@elysiajs/cors";
 import jwt from "@elysiajs/jwt";
-import Elysia, { t } from "elysia";
+import Elysia, { status, t } from "elysia";
 import { autoload } from "elysia-autoload";
 import { openapiConfig, type TagType, xtagGroups, xtags } from "./openapi-config";
 //to load env type
 import "./env";
 
+import { AppError } from "@be/shared/errors/app-error";
 import { OpenAPIScalarPlugin } from "openapi-scalar";
-import { addActivatedRolePlugin } from "./addActivatedRolePlugin";
+import { clinicContextService } from "./modules/clinic-context/clinic-context.service";
 
 declare module "elysia" {
 	interface DocumentDecoration {
@@ -33,47 +34,30 @@ const JWTPlugin = async (app: Elysia) => {
 export const app = new Elysia({
 	aot: true, //turn on precompile
 })
-	.use(await addActivatedRolePlugin)
 	.use(await JWTPlugin)
 	.macro({
 		isAuth: (enabled: boolean) => ({
-			beforeHandle: async ({ headers, activatedRoles, status, jwt }) => {
-				if (enabled) {
-					const auth = headers.authorization;
-					const token = auth?.startsWith("Bearer ") ? auth.slice(7) : null;
-					let userinfo = null;
-					if (token) {
-						userinfo = await jwt?.verify(token);
-						if (userinfo) {
-							if (headers.$hPath) {
-								let authorized = false;
-								if (activatedRoles) {
-									const allowedRoles = activatedRoles[headers.$hPath];
-									if (allowedRoles?.length) {
-										for (let i = 0; i < allowedRoles.length; i++) {
-											if (userinfo.roles) {
-												if (userinfo.roles.indexOf(allowedRoles[i]) >= 0) {
-													authorized = true;
-													break;
-												}
-											} else {
-												authorized = false;
-												break;
-											}
-										}
-									}
-								}
-								if (!authorized) return status(401, "Unauthorized");
-							}
-						} else {
-							return status(401, "Unauthenticated");
-						}
-					} else {
-						return status(401, "Unauthenticated");
-					}
+			resolve: async ({ headers, jwt, request }) => {
+				if (!enabled) return { clinicAuth: null };
+
+				const isClinicSelector = new URL(request.url).pathname.replace(/\/$/, "").endsWith("/api/clinic-context");
+				const clinicAuth = await clinicContextService.authenticateRequest(headers.authorization, jwt, headers["x-clinic-id"], isClinicSelector);
+
+				if (!isClinicSelector) clinicContextService.requireClinicContext(clinicAuth);
+
+				if (headers.$hPath !== undefined) {
+					const context = clinicContextService.requireClinicContext(clinicAuth);
+					clinicContextService.requirePermission(context, String(headers.$hPath));
 				}
+
+				return { clinicAuth };
 			},
 		}),
+	})
+	.onError(({ error }) => {
+		if (error instanceof AppError) {
+			return status(error.statusCode, error.message);
+		}
 	})
 	.use(cors())
 	.use(

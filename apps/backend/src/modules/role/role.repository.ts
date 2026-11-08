@@ -3,8 +3,8 @@ import { and, eq, inArray } from "drizzle-orm";
 import { type InsertRole, roles } from "./role.schema";
 
 export const roleRepository = {
-	async findAll() {
-		return db.select().from(roles);
+	async findAllByClinicId(clinicId: number) {
+		return db.select().from(roles).where(eq(roles.clinicId, clinicId));
 	},
 
 	async findByIds(roleIds: number[]) {
@@ -23,9 +23,12 @@ export const roleRepository = {
 		return db.insert(roles).values(data).returning({ id: roles.id });
 	},
 
-	// biome-ignore lint/suspicious/noExplicitAny: dynamic update object
-	async update(id: number, data: Record<string, any>) {
-		return db.update(roles).set(data).where(eq(roles.id, id));
+	async updateInClinic(id: number, clinicId: number, data: Partial<Omit<InsertRole, "clinicId">>) {
+		return db
+			.update(roles)
+			.set(data)
+			.where(and(eq(roles.id, id), eq(roles.clinicId, clinicId)))
+			.returning({ id: roles.id });
 	},
 };
 

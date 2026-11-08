@@ -32,10 +32,11 @@ import ProgressBar from "./components/progress-bar";
 // console.info(`%c${charAt}`, "color: #5BE49B");
 
 const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
+const queryClient = new QueryClient();
 
 root.render(
 	<HelmetProvider>
-		<QueryClientProvider client={new QueryClient()}>
+		<QueryClientProvider client={queryClient}>
 			{/* <ReactQueryDevtools initialIsOpen={false} /> */}
 			<Suspense>
 				<ProgressBar />

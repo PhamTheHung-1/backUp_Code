@@ -1,6 +1,7 @@
 import { useChangePasswordMutation } from "@fe/async-store/user";
 import Card from "@fe/components/card";
 import { useUserActions } from "@fe/store/userStore";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button, Form, Input } from "antd";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -14,6 +15,7 @@ type FieldType = {
 export default function SecurityTab() {
 	const [form] = Form.useForm<FieldType>();
 	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 	const { clearUserInfoAndToken } = useUserActions();
 	const changePasswordMutation = useChangePasswordMutation();
 
@@ -30,6 +32,7 @@ export default function SecurityTab() {
 			form.resetFields();
 
 			clearUserInfoAndToken();
+			queryClient.clear();
 			navigate("/login", { replace: true });
 		} catch (error: any) {
 			toast.error(error.message || "Đổi mật khẩu thất bại. Vui lòng thử lại!");

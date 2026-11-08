@@ -80,7 +80,9 @@ export type Flatten<T> = T extends Array<infer U> ? Flatten<U> : T;
 // biome-ignore lint/suspicious/noExplicitAny: temp
 export type InferReqBodyType<T extends (...args: any) => any> = DeepPrettify<Parameters<T>[0]>;
 // biome-ignore lint/suspicious/noExplicitAny: temp
-export type InferResType<T extends (...args: any) => any> = DeepPrettify<NonNullable<Awaited<ReturnType<T>>["data"]>>;
+export type InferResType<T extends (...args: any) => any> = DeepPrettify<
+	NonNullable<Extract<Awaited<ReturnType<T>>, { error: null }>["data"]>
+>;
 // 1. Lấy kiểu phản hồi đầy đủ (chứa cả { data, error, status })
 // type FullResponse = Awaited<ReturnType<typeof treatyClient.auth.login.post>>;
 

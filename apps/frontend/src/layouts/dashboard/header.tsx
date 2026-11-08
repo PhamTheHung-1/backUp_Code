@@ -10,6 +10,7 @@ import { type CSSProperties, useState } from "react";
 import { ThemeLayout } from "#fe/enum";
 import AccountDropdown from "../components/account-dropdown";
 import BreadCrumb from "../components/bread-crumb";
+import ClinicSwitcher from "../components/clinic-switcher";
 import NoticeButton from "../components/notice";
 import SearchBar from "../components/search-bar";
 import SettingButton from "../components/setting-button";
@@ -48,6 +49,7 @@ export default function Header() {
 					</div>
 
 					<div className="flex">
+						<ClinicSwitcher />
 						<SearchBar />
 
 						{/* <LocalePicker /> */}

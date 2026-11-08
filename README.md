@@ -814,14 +814,16 @@ Hệ thống được thiết kế sẵn giải pháp phân quyền dựa trên 
 Trong mỗi route, thuộc tính `detail.authType` quy định mức độ truy cập:
 - `authType: 0` (hoặc không khai báo): **Public API** - Bất kỳ ai cũng có thể gọi (ví dụ: login).
 - `authType: 1`: **Authentication Required** - Yêu cầu có Bearer Token JWT hợp lệ.
-- `authType: 2`: **RBAC Authorization** - Yêu cầu token hợp lệ VÀ Role của người dùng phải được phân quyền thực thi API này.
+- `authType: 2`: **RBAC Authorization** - Yêu cầu JWT, clinic membership đang hoạt động và role của membership phải có quyền API này.
+
+Với implementation hiện tại, cả `authType: 1` và `authType: 2` đều yêu cầu membership active và clinic context hợp lệ; `authType: 2` còn yêu cầu permission theo role của membership.
 
 ### 5.2 Cơ chế sinh mã băm API Route & Macro `isAuth`
 1. Khi khởi động, `packages/elysia-autoload` tự động băm đường dẫn route:
    ```typescript
    const hPath = Bun.hash.xxHash32(`${route.method}-${route.path}`);
    ```
-2. Macro xác thực `isAuth` ([apps/backend/src/App.ts](apps/backend/src/App.ts)) sẽ đối chiếu mã băm này với bảng quyền `activatedRoles` (được nạp từ bảng `roles.apis` trong cơ sở dữ liệu qua [addActivatedRolePlugin.ts](apps/backend/src/addActivatedRolePlugin.ts)).
+2. Macro `isAuth` ([apps/backend/src/App.ts](apps/backend/src/App.ts)) xác thực JWT hiện tại, tìm user từ claim `username`, rồi nạp membership, clinic, role và API permissions từ database. Quyền API được đọc từ `roles.apis` của các role đang gán cho membership trong clinic đã chọn; không dùng role IDs trong JWT hoặc menu frontend để quyết định quyền.
 3. Endpoint đặc biệt `GET /__apis__` trả về cây danh mục toàn bộ API trong hệ thống để màn hình Quản lý Role (Frontend) có thể tích chọn và cấp quyền trực quan.
 
 ### 5.3 Xác thực đăng nhập qua `/api/auth` & Phân quyền Menu động tại Frontend
@@ -829,6 +831,8 @@ Trong mỗi route, thuộc tính `detail.authType` quy định mức độ truy 
 - Mật khẩu được băm và kiểm tra bằng hàm `hashPassword` / `verifyPassword` với Salt và HMAC-SHA256 ([apps/backend/src/shared/utils/crypto.ts](apps/backend/src/shared/utils/crypto.ts)).
 - Khi đăng nhập thành công, Backend trả về token JWT cùng danh sách `menus` mà các Role của người dùng sở hữu.
 - Hook `usePermissionRoutes()` ([apps/frontend/src/router/hooks/use-permission-routes.tsx](apps/frontend/src/router/hooks/use-permission-routes.tsx)) sẽ tự động ánh xạ cây Menu thành các React Router routes và hiển thị lên Sidebar điều hướng.
+- API protected nhận clinic hiện hành qua header `X-Clinic-Id`. Backend chỉ chấp nhận clinic nếu user có membership active; nếu user chỉ thuộc một clinic thì backend tự chọn clinic đó. Với nhiều clinic, gọi `GET /api/clinic-context` để lấy danh sách clinic được phép chọn, rồi gửi ID trong header ở từng request. Header này chỉ chọn context, không cấp quyền.
+- Branch scope được kiểm tra phía backend qua `clinicContextService.requireBranchAccess`: dữ liệu đọc được phép ở mọi branch trong cùng clinic; thao tác ghi chỉ được phép ở branch được gán khi `branch_scope = 'assigned'`. Branch thuộc clinic khác trả về 404; branch inactive không nhận thao tác ghi. Dữ liệu record trong tương lai cũng phải được lọc theo clinic hiện hành và kiểm tra bằng `assertResourceClinic`.
 
 ---
 
@@ -843,8 +847,8 @@ Khi phát triển thêm tính năng, lập trình viên cần lưu ý một số
    - Hãy chạy `bun --filter backend arch:check` để đảm bảo code mới tuân thủ nguyên tắc không gọi DB trực tiếp từ route.
 3. **`initDB.ts` và dữ liệu Seed:**
    - File [apps/backend/src/initDB.ts](apps/backend/src/initDB.ts) được thiết kế để nạp dữ liệu ban đầu cho database trống. Script này **không idempotent** (không kiểm tra trùng lặp trước khi insert), do đó không chạy lại trên database đã có dữ liệu để tránh sinh bản ghi trùng hoặc lỗi unique constraint.
-4. **Cơ chế nạp quyền RBAC:**
-   - Danh sách quyền `activatedRoles` hiện được nạp vào bộ nhớ lúc Backend khởi động ([addActivatedRolePlugin.ts](apps/backend/src/addActivatedRolePlugin.ts)). Nếu bạn cập nhật phân quyền API cho một Role trên giao diện, cần khởi động lại Backend server để danh sách quyền trong bộ nhớ có hiệu lực.
+4. **Clinic context và RBAC:**
+   - Quyền request được truy xuất theo membership active và role cùng clinic trong database. `users.roles` trong JWT không được dùng làm quyền hiện hành; trường cũ được giữ để tương thích ngược. Mỗi API nghiệp vụ tenant-scoped cần dùng clinic context và áp dụng clinic/branch checks ở service/repository.
 5. **Kiểm tra kiểu dữ liệu & Kiểm thử:**
    - Chạy `bun --filter backend verify` trước khi commit mã nguồn để xác nhận đồng thời: TypeScript typecheck, kiểm tra kiến trúc và Unit tests đều đạt 100%.
 

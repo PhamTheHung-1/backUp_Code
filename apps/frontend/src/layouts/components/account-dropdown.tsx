@@ -3,6 +3,7 @@ import { useLoginStateContext } from "@fe/pages/sys/login/providers/LoginStatePr
 import { useRouter } from "@fe/router/hooks";
 import { useUserActions, useUserInfo } from "@fe/store/userStore";
 import { useTheme } from "@fe/theme/hooks";
+import { useQueryClient } from "@tanstack/react-query";
 import { Divider, type MenuProps } from "antd";
 import Dropdown, { type DropdownProps } from "antd/es/dropdown/dropdown";
 import React from "react";
@@ -16,6 +17,7 @@ const { VITE_APP_HOMEPAGE: HOMEPAGE } = import.meta.env;
  */
 export default function AccountDropdown() {
 	const { replace } = useRouter();
+	const queryClient = useQueryClient();
 	const { username, email, avatar } = useUserInfo();
 	const { clearUserInfoAndToken } = useUserActions();
 	const { backToLogin } = useLoginStateContext();
@@ -23,6 +25,7 @@ export default function AccountDropdown() {
 	const logout = () => {
 		try {
 			clearUserInfoAndToken();
+			queryClient.clear();
 			backToLogin();
 		} catch (error) {
 			console.log(error);

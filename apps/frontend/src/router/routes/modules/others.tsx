@@ -1,14 +1,10 @@
-import Card from "@fe/components/card";
 import { Iconify, SvgIcon } from "@fe/components/icon";
 import { CircleLoading } from "@fe/components/loading";
 import { Tag } from "antd";
 import { lazy, Suspense } from "react";
 import type { AppRouteObject } from "#fe/router";
 
-const ExternalLink = lazy(() => import("@fe/pages/sys/others/iframe/external-link"));
-const Iframe = lazy(() => import("@fe/pages/sys/others/iframe"));
 const Calendar = lazy(() => import("@fe/pages/sys/others/calendar"));
-const Kanban = lazy(() => import("@fe/pages/sys/others/kanban"));
 
 function Wrapper({ children }: any) {
 	return <Suspense fallback={<CircleLoading />}>{children}</Suspense>;
@@ -25,19 +21,6 @@ const others: AppRouteObject[] = [
 			label: "sys.menu.calendar",
 			icon: <Iconify icon="solar:calendar-bold-duotone" size={24} />,
 			key: "/calendar",
-		},
-	},
-	{
-		path: "kanban",
-		element: (
-			<Wrapper>
-				<Kanban />
-			</Wrapper>
-		),
-		meta: {
-			label: "sys.menu.kanban",
-			icon: <Iconify icon="solar:clipboard-bold-duotone" size={24} />,
-			key: "/kanban",
 		},
 	},
 	{
@@ -71,53 +54,8 @@ const others: AppRouteObject[] = [
 			key: "/label",
 		},
 	},
-	{
-		path: "frame",
-		meta: {
-			label: "sys.menu.frame",
-			icon: <SvgIcon icon="ic_external" className="ant-menu-item-icon" size="24" />,
-			key: "/frame",
-		},
-		children: [
-			{
-				path: "external_link",
-				element: (
-					<Wrapper>
-						<ExternalLink src="https://ant.design/index-cn" />
-					</Wrapper>
-				),
-				meta: {
-					label: "sys.menu.external_link",
-					key: "/frame/external_link",
-				},
-			},
-			{
-				path: "iframe",
-				element: (
-					<Wrapper>
-						<Iframe src="https://ant.design/index-cn" />
-					</Wrapper>
-				),
-				meta: {
-					label: "sys.menu.iframe",
-					key: "/frame/iframe",
-				},
-			},
-		],
-	},
-	{
-		path: "blank",
-		element: (
-			<Wrapper>
-				<Card />
-			</Wrapper>
-		),
-		meta: {
-			label: "sys.menu.blank",
-			icon: <SvgIcon icon="ic_blank" className="ant-menu-item-icon" size="24" />,
-			key: "/blank",
-		},
-	},
+
+
 ];
 
 export default others;

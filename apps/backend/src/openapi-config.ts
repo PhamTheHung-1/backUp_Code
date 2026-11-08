@@ -12,7 +12,7 @@ export const xtagGroups = [
 	// Tất cả các tags không thuộc vào một nhóm cụ thể nào đặt trong nhóm @----@ này
 	{
 		name: "@----@",
-		tags: ["User", "Other", "Organization"],
+		tags: ["User", "Other", "Organization", "Clinic", "Owner", "Pet", "Appointment", "Staff"],
 	},
 ] as const satisfies XtagGroup[];
 

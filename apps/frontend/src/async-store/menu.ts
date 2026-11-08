@@ -1,6 +1,6 @@
 import { convertFlatArrayToTree } from "@fe/utils/tree";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import type { InferElementType, InferReqBodyType, InferResType, TreeFromFlatArray } from "packages/type-utils";
+import type { InferElementType, InferReqBodyType, InferResType, TreeFromFlatArray } from "type-utils";
 import { treatyClient, unwrap } from "./apiClient";
 import { menuQueryKeys } from "./query-keys";
 

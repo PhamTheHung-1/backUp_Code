@@ -2,6 +2,7 @@ import { AppError } from "@be/shared/errors/app-error";
 import { t } from "elysia";
 import type { App } from "../../App";
 import { authService } from "../auth/auth.service";
+import { clinicContextService } from "../clinic-context/clinic-context.service";
 import { changePasswordSchema, createUserSchema, safeSelectUserSchema, updateUserSchema } from "./user.schema";
 import { userService } from "./user.service";
 
@@ -50,31 +51,14 @@ export default (app: App) =>
 		)
 		.post(
 			"/change-password",
-			async ({ body, headers, jwt, status }) => {
-				const auth = headers.authorization;
-				const token = auth?.startsWith("Bearer ") ? auth.slice(7) : null;
-				if (!token) {
-					return status(401, "Unauthenticated");
-				}
-
-				const payload = await jwt?.verify(token);
-				if (!payload || typeof payload === "boolean" || !payload.username) {
-					return status(401, "Invalid token");
-				}
-
-				try {
-					return await authService.changePasswordByEmail(payload.username, body.oldPassword, body.newPassword);
-				} catch (err: unknown) {
-					if (err instanceof AppError) {
-						if (err.statusCode === 404) return status(404, err.message);
-						if (err.statusCode === 400) return status(400, err.message);
-						return status(500, err.message);
-					}
-					throw err;
-				}
+			async ({ body, clinicAuth }) => {
+				if (!clinicAuth) throw AppError.unauthorized("Unauthenticated");
+				clinicContextService.requireClinicContext(clinicAuth);
+				return authService.changePasswordByEmail(clinicAuth.user.email, body.oldPassword, body.newPassword);
 			},
 			{
 				body: changePasswordSchema,
+				isAuth: true,
 				detail: {
 					summary: "Change password for authenticated user",
 					tags: ["User"],
@@ -129,7 +113,7 @@ export default (app: App) =>
 				detail: {
 					summary: "Return user list",
 					tags: ["User"],
-					authType: 0,
+					authType: 2,
 				},
 			},
 		);

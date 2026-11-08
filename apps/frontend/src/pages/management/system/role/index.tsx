@@ -28,7 +28,7 @@ export default function RolePage() {
 		role.id = selectedRoleId;
 		await roleMutation.mutateAsync(role);
 		setShow(false);
-		queryClient.invalidateQueries({ queryKey: ["roles"] });
+		queryClient.invalidateQueries({ queryKey: ["clinic-scoped", "roles"] });
 	};
 
 	const onCancel = () => {
@@ -54,7 +54,7 @@ export default function RolePage() {
 							id: record.id,
 							status: !record.status,
 						});
-						queryClient.invalidateQueries({ queryKey: ["roles"] });
+						queryClient.invalidateQueries({ queryKey: ["clinic-scoped", "roles"] });
 					}}
 					okText="Yes"
 					cancelText="No"
